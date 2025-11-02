@@ -1,0 +1,21 @@
+{
+  "name": "workflows",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
+  "description": "",
+  "author": "",
+  "license": "MIT",
+  "keywords": [],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.2.0",
+    "eslint": "^9.39.0",
+    "jiti": "^2.6.1"
+  }
+}

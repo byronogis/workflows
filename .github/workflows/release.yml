@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  workflow_call:
+    inputs: {}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Setup JS
+        uses: byrongois/workflows/setup-js@v1
+        with:
+          checkout_fetch-depth: '0'
+
+      - name: Generate GitHub Changelog
+        run: nlx changelogen@latest gh release
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
