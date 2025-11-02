@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Setup JS
-        uses: byrongois/workflows/setup-js@v1
+        uses: byronogis/workflows/setup-js@v1
         with:
           checkout_fetch-depth: '0'
 
