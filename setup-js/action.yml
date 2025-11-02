@@ -49,7 +49,7 @@ runs:
       uses: actions/checkout@v5
       with:
         persist-credentials: ${{ inputs.checkout_persist-credentials == 'true' }}
-        fetch-depth: '${{ checkout_fetch-depth }}'
+        fetch-depth: '${{ inputs.checkout_fetch-depth }}'
 
     - name: Setup node
       uses: actions/setup-node@v6
