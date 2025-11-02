@@ -83,9 +83,9 @@ runs:
       shell: bash
       run: |
         if [ -n "${{ inputs.package-manager-version }}" ]; then
-          corepack use ${{ inputs.package-manager }}@${{ inputs.package-manager-version }} --activate
+          corepack use ${{ inputs.package-manager }}@${{ inputs.package-manager-version }}
         else
-          corepack use ${{ inputs.package-manager }} --activate
+          corepack use ${{ inputs.package-manager }}
         fi
 
     - name: Install dependencies
