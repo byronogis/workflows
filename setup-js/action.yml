@@ -71,7 +71,7 @@ runs:
       if: ${{ inputs.package-manager == 'bun' }}
       uses: oven-sh/setup-bun@v2
       with:
-        bun-version: ${{ inputs.package-manager-version || inputs. setup-bun_bun-version }}
+        bun-version: ${{ inputs.package-manager-version || inputs.setup-bun_bun-version }}
 
     - name: Corepacks enable
       if: ${{ contains(fromJson('["npm","pnpm","yarn"]'), inputs.package-manager) }}
