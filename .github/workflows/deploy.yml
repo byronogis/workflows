@@ -4,11 +4,13 @@ on:
   workflow_call:
     inputs:
       build:
+        description: Build command to run
         required: false
         type: string
         default: nr build
 
       dist:
+        description: Directory to deploy
         required: false
         type: string
         default: dist
@@ -24,6 +26,11 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
       - name: Setup JS
