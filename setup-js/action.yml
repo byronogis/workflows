@@ -4,27 +4,27 @@ description: Setup JavaScript environment
 
 inputs:
   checkout_persist-credentials:
-    description: Whether to configure the token or SSH key with the local git config
+    description: Whether to configure the token or SSH key with the local git config. Defaults to false.
     required: false
     default: 'false'
 
   checkout_fetch-depth:
-    description: Number of commits to fetch. 0 indicates all history for all branches and tags.
+    description: Number of commits to fetch. 0 indicates all history for all branches and tags. Defaults to 1.
     required: false
     default: '1'
 
   setup-node_node-version:
-    description: 'Version Spec of the Node version to use. Examples: 12.x, 10.15.1, >=10.15.0.'
+    description: 'Version Spec of the Node version to use. Examples: 12.x, 10.15.1, >=10.15.0. Default is lts/*.'
     required: false
     default: 'lts/*'
 
   setup-deno_deno-version:
-    description: 'Version Spec of the Deno version to use. Examples: 1.0.0, 1.x, latest.'
+    description: 'Version Spec of the Deno version to use. Examples: 1.0.0, 1.x, latest. Default is lts.'
     required: false
     default: lts
 
   setup-bun_bun-version:
-    description: 'Version Spec of the Bun version to use. Examples: 0.1.0, 0.x, latest.'
+    description: 'Version Spec of the Bun version to use. Examples: 0.1.0, 0.x, latest. Default is latest.'
     required: false
     default: latest
 
@@ -38,7 +38,7 @@ inputs:
     required: false
 
   auto-install:
-    description: Whether to automatically install dependencies.
+    description: Whether to automatically install dependencies. Defaults to true.
     required: false
     default: 'true'
 
@@ -51,15 +51,25 @@ runs:
         persist-credentials: ${{ inputs.checkout_persist-credentials == 'true' }}
         fetch-depth: '${{ inputs.checkout_fetch-depth }}'
 
+    - name: Prepare corepack and ni
+      if: ${{ contains(fromJson('["npm","pnpm","yarn"]'), inputs.package-manager) }}
+      shell: bash
+      run: |
+        npm install -g corepack@latest @antfu/ni@latest
+
+        if [ -n "${{ inputs.package-manager-version }}" ]; then
+          corepack install -g ${{ inputs.package-manager }}@${{ inputs.package-manager-version }}
+        else
+          corepack install -g ${{ inputs.package-manager }}
+        fi
+
     - name: Setup node
+      if: ${{ contains(fromJson('["npm","pnpm","yarn"]'), inputs.package-manager) }}
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.setup-node_node-version }}
         registry-url: 'https://registry.npmjs.org'
-
-    - name: Install ni (use the right package manager)
-      shell: bash
-      run: npm install -g @antfu/ni
+        cache: ${{ inputs.package-manager }}
 
     - name: Setup deno
       if: ${{ inputs.package-manager == 'deno' }}
@@ -72,21 +82,6 @@ runs:
       uses: oven-sh/setup-bun@v2
       with:
         bun-version: ${{ inputs.package-manager-version || inputs.setup-bun_bun-version }}
-
-    - name: Corepacks enable
-      if: ${{ contains(fromJson('["npm","pnpm","yarn"]'), inputs.package-manager) }}
-      shell: bash
-      run: corepack enable
-
-    - name: Corepacks prepare
-      if: ${{ contains(fromJson('["npm","pnpm","yarn"]'), inputs.package-manager) }}
-      shell: bash
-      run: |
-        if [ -n "${{ inputs.package-manager-version }}" ]; then
-          corepack use ${{ inputs.package-manager }}@${{ inputs.package-manager-version }}
-        else
-          corepack use ${{ inputs.package-manager }}
-        fi
 
     - name: Install dependencies
       if: ${{ inputs.auto-install == 'true' }}
