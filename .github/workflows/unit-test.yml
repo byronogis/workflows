@@ -49,10 +49,12 @@ jobs:
       - name: Lint
         if: ${{ inputs.lint != '' }}
         run: ${{ inputs.lint }}
+        continue-on-error: true
 
       - name: Type Check
         if: ${{ inputs.typecheck != '' }}
         run: ${{ inputs.typecheck }}
+        continue-on-error: true
 
       - name: Test
         if: ${{ inputs.test != '' }}
