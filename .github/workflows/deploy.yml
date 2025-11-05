@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       build:
-        description: Build command to run
+        description: Build command to run, set to empty to skip this step
         required: false
         type: string
         default: nr build
@@ -37,12 +37,13 @@ jobs:
         uses: byronogis/workflows/setup-js@v1
 
       - name: Build
+        if: ${{ inputs.build != '' }}
         run: ${{ inputs.build }}
 
-      - name: Verify build
+      - name: Verify Dist Directory
         run: |
           if [ ! -d "${{ inputs.dist }}" ]; then
-            echo "Build failed - ${{ inputs.dist }} directory not found"
+            echo "${{ inputs.dist }} directory not found"
             exit 1
           fi
 

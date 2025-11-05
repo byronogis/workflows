@@ -4,59 +4,37 @@ on:
   workflow_call:
     inputs:
       typecheck:
+        description: Type check command to run, set to empty to skip this step
         required: false
         type: string
         default: nr typecheck
 
       lint:
+        description: Lint command to run, set to empty to skip this step
         required: false
         type: string
         default: nr lint
 
       build:
+        description: Build command to run, set to empty to skip this step
         required: false
         type: string
         default: nr build
 
       test:
+        description: Test command to run, set to empty to skip this step
         required: false
         type: string
         default: nr test
 
-      skip-lint:
-        required: false
-        type: boolean
-        default: false
-
-      skip-test:
-        required: false
-        type: boolean
-        default: false
-
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    if: ${{ !inputs.skip-lint }}
-    steps:
-      - name: Setup JS
-        uses: byronogis/workflows/setup-js@v1
-
-      - name: Type Check
-        run: ${{ inputs.typecheck }}
-        if: ${{ inputs.typecheck != '' }}
-
-      - name: Lint
-        run: ${{ inputs.lint }}
-        if: ${{ inputs.lint != '' }}
-
-  test:
+  unit-test:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
         node-version: [20, 22, 24, 25]
       fail-fast: false
 
-    if: ${{ !inputs.skip-test }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Setup JS
@@ -65,7 +43,17 @@ jobs:
           runtime-version: ${{ matrix.node-version }}
 
       - name: Build
+        if: ${{ inputs.build != '' }}
         run: ${{ inputs.build }}
 
-      - name: Unit Test
+      - name: Lint
+        if: ${{ inputs.lint != '' }}
+        run: ${{ inputs.lint }}
+
+      - name: Type Check
+        if: ${{ inputs.typecheck != '' }}
+        run: ${{ inputs.typecheck }}
+
+      - name: Test
+        if: ${{ inputs.test != '' }}
         run: ${{ inputs.test }}
