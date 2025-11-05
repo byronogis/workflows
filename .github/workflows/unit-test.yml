@@ -1,0 +1,71 @@
+name: Unit Test
+
+on:
+  workflow_call:
+    inputs:
+      typecheck:
+        required: false
+        type: string
+        default: nr typecheck
+
+      lint:
+        required: false
+        type: string
+        default: nr lint
+
+      build:
+        required: false
+        type: string
+        default: nr build
+
+      test:
+        required: false
+        type: string
+        default: nr test
+
+      skip-lint:
+        required: false
+        type: boolean
+        default: false
+
+      skip-test:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.skip-lint }}
+    steps:
+      - name: Setup JS
+        uses: byronogis/workflows/setup-js@v1
+
+      - name: Type Check
+        run: ${{ inputs.typecheck }}
+        if: ${{ inputs.typecheck != '' }}
+
+      - name: Lint
+        run: ${{ inputs.lint }}
+        if: ${{ inputs.lint != '' }}
+
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node-version: [20, 22, 24, 25]
+      fail-fast: false
+
+    if: ${{ !inputs.skip-test }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Setup JS
+        uses: byronogis/workflows/setup-js@v1
+        with:
+          runtime-version: ${{ matrix.node-version }}
+
+      - name: Build
+        run: ${{ inputs.build }}
+
+      - name: Unit Test
+        run: ${{ inputs.test }}
