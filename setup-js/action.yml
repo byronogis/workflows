@@ -13,29 +13,19 @@ inputs:
     required: false
     default: '1'
 
-  setup-node_node-version:
-    description: 'Version Spec of the Node version to use. Examples: 12.x, 10.15.1, >=10.15.0. Default is lts/*.'
+  runtime:
+    description: 'Runtime to setup. Examples: node, deno, bun. Default is node.'
     required: false
-    default: 'lts/*'
+    default: node
 
-  setup-deno_deno-version:
-    description: 'Version Spec of the Deno version to use. Examples: 1.0.0, 1.x, latest. Default is lts.'
+  runtime-version:
+    description: 'Version Spec of the runtime to use. Defaults: for Node is lts/*, for Deno is lts, for Bun is latest.'
     required: false
-    default: lts
 
-  setup-bun_bun-version:
-    description: 'Version Spec of the Bun version to use. Examples: 0.1.0, 0.x, latest. Default is latest.'
-    required: false
-    default: latest
-
-  package-manager:
-    description: 'Package manager to use. Examples: npm, yarn, pnpm, deno, bun. Default is pnpm.'
+  node-package-manager:
+    description: 'Package manager to use when runtime is node. Examples: npm, yarn, pnpm. Default is pnpm.'
     required: false
     default: pnpm
-
-  package-manager-version:
-    description: Version of the package manager to use. Leave empty to use the default version.
-    required: false
 
   auto-install:
     description: Whether to automatically install dependencies. Defaults to true.
@@ -51,41 +41,37 @@ runs:
         persist-credentials: ${{ inputs.checkout_persist-credentials == 'true' }}
         fetch-depth: '${{ inputs.checkout_fetch-depth }}'
 
-    - name: Prepare corepack and ni
-      if: ${{ contains(fromJson('["npm","pnpm","yarn"]'), inputs.package-manager) }}
+    - name: Prepare corepack
       shell: bash
-      run: |
-        npm install -g corepack@latest @antfu/ni@latest
+      run: npm install -g corepack@latest --force
 
-        if [ -n "${{ inputs.package-manager-version }}" ]; then
-          corepack install -g ${{ inputs.package-manager }}@${{ inputs.package-manager-version }}
-        else
-          corepack install -g ${{ inputs.package-manager }}
-        fi
+    - name: Prepare ni (use the right package manager)
+      shell: bash
+      run: npm install -g @antfu/ni@latest
 
     - name: Setup node
-      if: ${{ contains(fromJson('["npm","pnpm","yarn"]'), inputs.package-manager) }}
+      if: ${{ inputs.runtime == 'node' }}
       uses: actions/setup-node@v6
       with:
-        node-version: ${{ inputs.setup-node_node-version }}
+        node-version: ${{ inputs.runtime-version || 'lts/*' }}
         registry-url: 'https://registry.npmjs.org'
-        cache: ${{ inputs.package-manager }}
+        cache: ${{ inputs.node-package-manager }}
 
     - name: Setup deno
-      if: ${{ inputs.package-manager == 'deno' }}
+      if: ${{ inputs.runtime == 'deno' }}
       uses: denoland/setup-deno@v2
       with:
-        deno-version: ${{ inputs.package-manager-version || inputs.setup-deno_deno-version }}
+        deno-version: ${{ inputs.runtime-version || 'lts' }}
 
     - name: Setup bun
-      if: ${{ inputs.package-manager == 'bun' }}
+      if: ${{ inputs.runtime == 'bun' }}
       uses: oven-sh/setup-bun@v2
       with:
-        bun-version: ${{ inputs.package-manager-version || inputs.setup-bun_bun-version }}
+        bun-version: ${{ inputs.runtime-version || 'latest' }}
 
     - name: Install dependencies
       if: ${{ inputs.auto-install == 'true' }}
       shell: bash
       run: ni
       env:
-        NI_DEFAULT_AGENT: ${{ inputs.package-manager }}
+        NI_DEFAULT_AGENT: ${{ inputs.runtime == 'node' && inputs.node-package-manager || inputs.runtime }}
