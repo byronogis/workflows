@@ -2,7 +2,15 @@ name: Release
 
 on:
   workflow_call:
-    inputs: {}
+    inputs:
+      publish:
+        description: Publish command to run, set to empty to skip this step
+        required: false
+        type: string
+      build:
+        description: Build command to run, set to empty to skip this step
+        required: false
+        type: string
 
 jobs:
   release:
@@ -24,3 +32,11 @@ jobs:
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        if: ${{ inputs.build != '' }}
+        run: ${{ inputs.build }}
+
+      - name: Publish
+        if: ${{ inputs.publish != '' }}
+        run: ${{ inputs.publish }}
